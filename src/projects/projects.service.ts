@@ -6,33 +6,90 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProjectsService {
-  //pasar una instancia de la conexión a la bd: database
-  constructor ( private database: PrismaService ){}
+  // Pasar una instancia de la conexión a la bd: database
+  constructor(private database: PrismaService) {}
 
-  //modificar create() para registrar un proyecto
-/* 
-create(createProjectDto: CreateProjectDto) {
-    return 'This action adds a new project';
-  }*/
-  async create(projectData: Prisma.ProjectCreateInput) {
-    return this.database.project.create({
-      data: projectData
-    })
+  // Modificar create() para registrar un proyecto
+  async create(createProjectDto: CreateProjectDto) {
+    try {
+      const newProject = await this.database.project.create({
+        data: createProjectDto,
+      });
+      return {
+        message: 'Proyecto creado exitosamente',
+        project: newProject,
+      };
+    } catch (error) {
+      // Manejo de errores en caso de que ocurra algo al crear un proyecto
+      throw new Error(`Error al crear el proyecto: ${error.message}`);
+    }
   }
 
-  findAll() {
-    return `This action returns all projects`;
+  // Obtener todos los proyectos
+  async findAll() {
+    try {
+      const projects = await this.database.project.findMany();
+      return {
+        message: 'Proyectos recuperados exitosamente',
+        projects: projects,
+      };
+    } catch (error) {
+      throw new Error(`Error al recuperar proyectos: ${error.message}`);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
+  // Obtener un proyecto por ID
+  async findOne(id: number) {
+    try {
+      const project = await this.database.project.findUnique({
+        where: { id },
+      });
+
+      if (!project) {
+        return {
+          message: `Proyecto con ID ${id} no encontrado`,
+        };
+      }
+
+      return {
+        message: 'Proyecto recuperado exitosamente',
+        project: project,
+      };
+    } catch (error) {
+      throw new Error(`Error al recuperar el proyecto: ${error.message}`);
+    }
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  // Actualizar un proyecto por ID
+  async update(id: number, updateProjectDto: UpdateProjectDto) {
+    try {
+      const updatedProject = await this.database.project.update({
+        where: { id },
+        data: updateProjectDto,
+      });
+
+      return {
+        message: 'Proyecto actualizado exitosamente',
+        project: updatedProject,
+      };
+    } catch (error) {
+      throw new Error(`Error al actualizar el proyecto: ${error.message}`);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  // Eliminar un proyecto por ID
+  async remove(id: number) {
+    try {
+      const deletedProject = await this.database.project.delete({
+        where: { id },
+      });
+
+      return {
+        message: 'Proyecto eliminado exitosamente',
+        project: deletedProject,
+      };
+    } catch (error) {
+      throw new Error(`Error al eliminar el proyecto: ${error.message}`);
+    }
   }
 }
