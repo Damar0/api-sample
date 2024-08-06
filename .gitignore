@@ -3,3 +3,9 @@
 /build
 
 /.env
+
+#pg folder data
+/pg data
+
+#logs
+logs
