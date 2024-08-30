@@ -1,76 +1,66 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
+import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-
-export type Task = {
-    id: number,
-    date: Date,
-    description: String,
-    completed: boolean,
-}
+import { Task } from '@prisma/client';
 
 @Injectable()
 export class TasksService {
-    private tasks : Task[] = [
-        {
-            id:1,
-            date: new Date(),
-            description: 'Crear Proyecto',
-            completed: false
-        },
-        {
-            id:2,
-            date: new Date(),
-            description: 'Agregar módulo Tasks',
-            completed: false
-        },
-        {
-            id:3,
-            date: new Date(),
-            description: 'Agregar controlador y servicio a módulo Tasks',
-            completed: false
-        }
-    ]
-    findAll(): Task[]{
-        return this.tasks;
-    }
-    /**
-     * Crear tarea
-     * @param task
-     * @return tarea creada
-    */
-   createTask(task:Task): Task {
-    const taskData = {
-        id: this.tasks.length + 1,
-        ...task
-    }
-    this.tasks.push(taskData);
-    return taskData;
-   }
+  constructor(private database: PrismaService) {}
 
-   updateTask(id: number, updateTaskDto: UpdateTaskDto): string {
-    const taskToUpdate = this.tasks.find(task => task.id === id);
-    if (!taskToUpdate) {
-        return "No se encuentra la Task"; 
+  async create(createTaskDto: CreateTaskDto): Promise<Task> {
+    try {
+      const newTask = await this.database.task.create({
+        data: createTaskDto,
+      });
+      return newTask;
+    } catch (error) {
+      throw new Error(`Error al crear la tarea: ${error.message}`);
     }
-    if (updateTaskDto.description !== undefined) {
-        taskToUpdate.description = updateTaskDto.description;
-    }
-    if (updateTaskDto.date !== undefined) {
-        taskToUpdate.date = updateTaskDto.date;
-    }
-    return "ok"; 
-}
+  }
 
-deleteTask(id: number): string {
-    const initialLength = this.tasks.length;
-    this.tasks = this.tasks.filter(task => task.id !== id);
-    if (this.tasks.length < initialLength) {
-        return "Tarea eliminada";
-    } else {
-        return "No se encontró la tarea para eliminar";
+  // Obtener todas las tareas
+  async findAll(): Promise<Task[]> {
+    try {
+      return await this.database.task.findMany();
+    } catch (error) {
+      throw new Error(`Error al recuperar tareas: ${error.message}`);
     }
-}
-    getTask(id: number): Task{
-        return this.tasks.find((item) => item.id == id);
+  }
+
+  // Obtener una tarea por ID
+  async findOne(id: number): Promise<Task | null> {
+    try {
+      return await this.database.task.findUnique({
+        where: { id },
+      });
+    } catch (error) {
+      throw new Error(`Error al recuperar la tarea: ${error.message}`);
     }
+  }
+
+  // Actualizar una tarea por ID
+  async update(id: number, updateTaskDto: UpdateTaskDto): Promise<Task> {
+    try {
+      return await this.database.task.update({
+        where: { id },
+        data: updateTaskDto,
+      });
+    } catch (error) {
+      throw new Error(`Error al actualizar la tarea: ${error.message}`);
+    }
+  }
+
+  // Eliminar una tarea por ID
+  async remove(id: number): Promise<Task> {
+    try {
+      return await this.database.task.delete({
+        where: { id },
+      });
+    } catch (error) {
+      throw new Error(`Error al eliminar la tarea: ${error.message}`);
+    }
+  }
 }
+export { Task };
+

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { Task, TasksService } from './tasks.service';
+import { Task, TasksService } from '../tasks/tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
@@ -8,30 +8,31 @@ export class TasksController {
     constructor(private tasksService: TasksService) {}
 
     @Get()
-    findAll(): Task[] {
-        return this.tasksService.findAll();
+    async findAll(): Promise<Task[]> {
+        return await this.tasksService.findAll();
     }
 
     // POST
     @Post()
-    createTask(@Body() newTask: CreateTaskDto): Task {
-        return this.tasksService.createTask(newTask as unknown as Task);
+    async createTask(@Body() newTask: CreateTaskDto): Promise<Task> {
+        return await this.tasksService.create(newTask as unknown as Task);
     }
 
     // PUT
     @Put(':id')
-    updateTask(@Param('id') id: string, @Body() taskData: UpdateTaskDto): string {
-        const result = this.tasksService.updateTask(parseInt(id), taskData);
-        return result;
+    async updateTask(@Param('id') id: string, @Body() taskData: UpdateTaskDto): Promise<Task> {
+        const result = await this.tasksService.update(parseInt(id), taskData);
+        return result;  
     }
-    //DELETE
+    // DELETE
     @Delete(':id')
-    deleteTask(@Param('id') id: string): string {
-        return this.tasksService.deleteTask(parseInt(id));
-    }
-    //SHOW
+    async deleteTask(@Param('id') id: string): Promise<{ message: string }> {
+        await this.tasksService.remove(parseInt(id));
+        return { message: `Tarea con ID ${id} eliminada exitosamente.` };
+}
+    // SHOW
     @Get(':id')
-    getTask(@Param('id') id: string) : Task{
-        return this.tasksService.getTask(parseInt(id));
+    async getTask(@Param('id') id: string): Promise<Task> {
+        return await this.tasksService.findOne(parseInt(id));
     }
 }

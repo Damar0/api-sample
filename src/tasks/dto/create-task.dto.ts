@@ -1,5 +1,6 @@
-//crear tarea
-export class CreateTaskDto{
-    description: string;
-    date: Date
-}
+export class CreateTaskDto {
+    name: string;
+    description?: string;
+    completed: boolean;
+    projectId: number; 
+  }
